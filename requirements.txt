@@ -19,4 +19,5 @@ pytz==2017.2
 requests==2.13.0
 rsa==3.4.2
 six==1.10.0
+twilio==6.1.0
 uritemplate==3.0.0

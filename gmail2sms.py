@@ -1,12 +1,13 @@
 from __future__ import print_function
 import httplib2
 import os
-import json
+from twilio.rest import Client
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-import way2sms
+import json
+
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -18,6 +19,15 @@ except ImportError:
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Gmail API Python Quickstart'
+
+
+def send_sms(mes):
+    with open('twilio_credentials.json') as file:
+        data=json.load(file)
+    account_sid=data["account_sid"]
+    auth_token=data["auth_token"]
+    client=Client(account_sid,auth_token)
+    send=client.api.account.messages.create(to=data["to"],from_=data["from"],body=mes)
 
 
 def get_credentials():
@@ -41,12 +51,12 @@ def get_credentials():
     return credentials
 
 def get_message(message):
-        return str(message['snippet'])
+        return str(message['snippet']).encode('ascii','ignore')
 
 def get_sender(message):
     for i in range(len(message['payload']['headers'])):
         if(str(message['payload']['headers'][i]['name'])=='From'):
-            return(str(message['payload']['headers'][i]['value']))
+            return(str(message['payload']['headers'][i]['value']).encode('ascii','ignore'))
 
 def main():
     credentials = get_credentials()
@@ -61,10 +71,7 @@ def main():
 
     print ("You have a new mail from "+sender)
     print (snippet)
-    q=way2sms.sms(8097091097,"Veerbhagatsingh")
-    q.send(8097091097,"You have a new mail from "+sender+" "+snippet)
-    q.logout()
-
+    send_sms("You have a new mail from "+sender+": "+snippet)
 
 
 if __name__ == '__main__':
